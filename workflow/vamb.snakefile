@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import re
 import os
-import from vamb.vambtools import concatenate_fasta
+from vamb.vambtools import concatenate_fasta
 
 def get_config(name, default, regex):
     res = config.get(name, default).strip()
@@ -50,8 +50,6 @@ with open(SAMPLE_DATA) as file:
 # read in list of per-sample assemblies
 with open(CONTIGS) as file:
     contigs_list = list(filter(None, map(str.strip, file)))
-
-## start of snakemake rules ##
 
 # targets
 rule all:
