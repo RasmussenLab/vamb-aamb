@@ -73,18 +73,7 @@ rule cat_contigs:
         "log/contigs/catcontigs.log"
     conda:
         "envs/vamb.yaml"
-    run:
-        for path in input:
-            if not os.path.isfile()
-                raise FileNotFoundError(path)
-
-        if os.path.exists(output[0]):
-            raise FileExistsError(output[0])
-
-        with gzip.open(output[0], "wt", compresslevel=3) as file:
-            concatenate_fasta(
-                file, input, minlength=int(MIN_CONTIG_SIZE), rename=True
-            )
+    shell: "python ../src/concatenate.py {output} {input} -m {MIN_CONTIG_SIZE}"
 
 rule index:
     input:
