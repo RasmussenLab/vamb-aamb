@@ -173,12 +173,7 @@ rule vamb:
         contigs = "contigs.flt.fna.gz",
         bamfiles=expand("mapped/{sample}.sort.bam", sample=IDS)
     output:
-        "vamb/composition.npz",
-        "vamb/abundance.npz",
-        "vamb/clusters.tsv",
-        "vamb/latent.npz",
-        "vamb/log.txt",
-        "vamb/model.pt"
+        directory(OUTDIR_NAME)
     params:
         walltime="86400",
         nodes="1",
