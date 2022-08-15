@@ -27,12 +27,6 @@ CONTIGS = get_config("contigs", "contigs.txt", r".*")
 VAMB_PARAMS = get_config("vamb_params", "-o C -m 2000 --minfasta 500000", r".*")
 VAMB_PRELOAD = get_config("vamb_preload", "", r".*")
 
-# Get output dir
-OUTDIR_NAME = "vamb"
-while os.path.exists(OUTDIR_NAME):
-    n = 1 if OUTDIR_NAME == "vamb" else int(OUTDIR_NAME[4:]) + 1
-    OUTDIR_NAME = "vamb" + str(n)
-
 # parse if GPUs is needed #
 
 vamb_threads, sep, vamb_gpus = VAMB_PPN.partition(":gpus=")
@@ -57,7 +51,7 @@ with open(CONTIGS) as file:
 rule all:
     input:
         "vamb/clusters.tsv",
-        "vamb/checkm.results"
+        "checkm/checkm.results"
 
 rule cat_contigs:
     input:
@@ -152,7 +146,7 @@ rule sort:
     input:
         "mapped/{sample}.bam"
     output:
-        temp("mapped/{sample}.sort.bam")
+        "mapped/{sample}.sort.bam"
     params:
         walltime="864000",
         nodes="1",
@@ -173,7 +167,7 @@ rule vamb:
         contigs = "contigs.flt.fna.gz",
         bamfiles=expand("mapped/{sample}.sort.bam", sample=IDS)
     output:
-        directory(OUTDIR_NAME)
+        "vamb/clusters.tsv"
     params:
         walltime="86400",
         nodes="1",
@@ -188,7 +182,7 @@ rule vamb:
         "envs/vamb.yaml"
     shell:
         "{VAMB_PRELOAD}"
-        "vamb --outdir {OUTDIR_NAME} "
+        "vamb --outdir vamb "
         "--fasta {input.contigs} "
         "--bamfiles {input.bamfiles} "
         "{params.cuda}"
@@ -198,16 +192,16 @@ rule checkm:
     input:
         "vamb/clusters.tsv"
     output:
-        "vamb/checkm.results"
+        "checkm/checkm.results"
     params:
         walltime="86400",
         nodes="1",
         ppn=CHECKM_PPN,
         mem=CHECKM_MEM,
         bins="vamb/bins",
-        outdir="vamb/checkm.outdir"
+        outdir="checkm"
     log:
-        "log/vamb/checkm.log"
+        "log/checkm.log"
     threads:
         int(CHECKM_PPN)
     conda:
