@@ -11,6 +11,8 @@ def get_config(name, default, regex):
             f"Config option \"{name}\" is \"{res}\", but must conform to regex \"{regex}\"")
     return res
 
+SNAKEDIR = os.path.dirname(workflow.snakefile)
+
 # set configurations
 INDEX_SIZE = get_config("index_size", "12G", r"[1-9]\d*[GM]$")
 MM_MEM = get_config("minimap_mem", "35gb", r"[1-9]\d*gb$")
@@ -43,7 +45,7 @@ CUDA = len(vamb_gpus) > 0
 IDS = []
 sample2path = {}
 with open(SAMPLE_DATA) as file:
-    for (id, fw, rv) in map(lambda line: line.strip().split('\t'), file):
+    for (id, fw, rv) in map(lambda line: line.strip().split(), file):
         IDS.append(id)
         sample2path[id] = [fw, rv]
 
@@ -63,6 +65,7 @@ rule cat_contigs:
     output:
         "contigs.flt.fna.gz"
     params:
+        path=os.path.join(os.path.dirname(SNAKEDIR), "src", "concatenate.py"),
         walltime="864000",
         nodes="1",
         ppn="1",
@@ -73,7 +76,7 @@ rule cat_contigs:
         "log/contigs/catcontigs.log"
     conda:
         "envs/vamb.yaml"
-    shell: "python ../src/concatenate.py {output} {input} -m {MIN_CONTIG_SIZE}"
+    shell: "python {params.path} {output} {input} -m {MIN_CONTIG_SIZE}"
 
 rule index:
     input:
@@ -185,7 +188,7 @@ rule vamb:
     log:
         "log/vamb/vamb.log"
     threads:
-        int(VAMB_threads)
+        int(vamb_threads)
     conda:
         "envs/vamb.yaml"
     shell:
